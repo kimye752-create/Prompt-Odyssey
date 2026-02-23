@@ -1,0 +1,311 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="fixed bottom-10 right-10 z-[100] group">
+    <div class="hidden group-hover:block absolute bottom-20 right-0 w-[calc(100vw-4rem)] max-w-[20rem] md:w-80 glass-card p-8 rounded-3xl border border-[#ff00ff]/30 shadow-2xl animate-fade-in bg-black/90 backdrop-blur-xl">
+        <h4 class="text-xs font-black text-[#ff00ff] mb-4 tracking-widest uppercase">Trade GPM Calculator</h4>
+        <div class="space-y-4">
+            <input type="number" id="sales-val" placeholder="예상 매출액" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white outline-none focus:border-[#ff00ff]/50">
+            <input type="number" id="cost-val" placeholder="매출 원가(소싱가)" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white outline-none focus:border-[#ff00ff]/50">
+            <button onclick="calcGPM()" class="w-full py-3 bg-[#ff00ff]/20 text-[#ff00ff] font-bold rounded-xl text-xs hover:bg-[#ff00ff] hover:text-white transition-all italic uppercase tracking-widest">Run Calculation</button>
+            <div id="gpm-result" class="text-center font-mono text-cyber-cyan text-lg font-black mt-2"></div>
+        </div>
+    </div>
+    <button class="w-16 h-16 bg-[#ff00ff] text-white rounded-full shadow-[0_0_30px_#ff00ff] text-2xl font-black hover:scale-110 transition-transform flex items-center justify-center">⌬</button>
+</div>
+
+<div class="animate-fade-in space-y-8 px-6 md:px-10 pt-6 pb-12">
+    
+    <header class="flex flex-col lg:flex-row justify-between items-start lg:items-end border-l-8 border-[#ff00ff] pl-8 pt-2 pb-0 mb-4 gap-6 lg:gap-0">
+        <div>
+            <h1 class="text-3xl md:text-5xl font-black tracking-tighter uppercase italic shadow-neon-white leading-tight">
+                <span class="not-italic inline-block mr-3">🤖</span> Custom  Prompt  Architect
+            </h1>
+            <p class="text-gray-300 mt-4 md:mt-6 text-sm md:text-base opacity-125 font-medium md:whitespace-nowrap leading-relaxed">
+                내 업무에 맞는 특화 AI를 설계하는 곳, Custom Prompt Architect입니다. 🏗️
+            </p>
+        </div>
+        <div class="text-left md:text-right shrink-0">
+            <span class="text-[9px] md:text-[10px] text-[#ff00ff] font-black tracking-widest block mb-1 uppercase italic">GPT-API</span>
+            <span class="px-4 py-2 bg-[#ff00ff]/10 border border-[#ff00ff]/30 rounded-full text-[10px] md:text-xs font-medium text-[#ff00ff] animate-pulse">System ONLINE</span>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <button onclick="fillExample('해외 바이어 발굴 및 첫 거래 제안 메일 작성을 위한 퓨샷(Few-shot) 프롬프트를 만들어줘')" class="glass-card p-4 rounded-2xl border border-white/5 hover:border-[#ff00ff]/50 transition-all text-left group">
+            <span class="text-lg block mb-1 group-hover:scale-125 transition-transform">📧</span>
+            <p class="text-[11px] md:text-[14px] font-bold text-gray-400 group-hover:text-white uppercase tracking-tighter leading-tight">B2B 영업 제안</p>
+        </button>
+        
+        <button onclick="fillExample('25년차 전문 관세사의 시각으로 원산지 증명서 발급 시 주의사항을 교육하는 페르소나 프롬프트를 작성해줘')" class="glass-card p-4 rounded-2xl border border-white/5 hover:border-cyber-cyan/50 transition-all text-left group">
+            <span class="text-lg block mb-1 group-hover:scale-125 transition-transform">⚖️</span>
+            <p class="text-[11px] md:text-[14px] font-bold text-gray-400 group-hover:text-white uppercase tracking-tighter leading-tight">관세/통관 전문</p>
+        </button>
+        
+        <button onclick="fillExample('협력사의 단가 인상 요청을 정중하고 격식 있게 거절하며 최선 협상안을 제시하는 비즈니스 톤 가이드 프롬프트를 만들어줘')" class="glass-card p-4 rounded-2xl border border-white/5 hover:border-cyber-purple/50 transition-all text-left group">
+            <span class="text-lg block mb-1 group-hover:scale-125 transition-transform">🤝</span>
+            <p class="text-[11px] md:text-[14px] font-bold text-gray-400 group-hover:text-white uppercase tracking-tighter leading-tight">정중한 거래 진행</p>
+        </button>
+        
+        <button onclick="fillExample('상품매출총이익률(GPM) 분석을 위해 매출 데이터에서 핵심 지표만 추출하는 분석 프레임워크 프롬프트를 작성해줘')" class="glass-card p-4 rounded-2xl border border-white/5 hover:border-cyber-green/50 transition-all text-left group">
+            <span class="text-lg block mb-1 group-hover:scale-125 transition-transform">📊</span>
+            <p class="text-[11px] md:text-[14px] font-bold text-gray-400 group-hover:text-white uppercase tracking-tighter leading-tight">데이터 분석</p>
+        </button>
+        
+        <button onclick="fillExample('복잡하고 긴 업무 리포트를 실무자가 바로 이해할 수 있게 3줄로 요약하는 프롬프트를 만들어줘')" class="glass-card p-4 rounded-2xl border border-white/5 hover:border-yellow-500/50 transition-all text-left group col-span-2 md:col-span-1">
+            <span class="text-lg block mb-1 group-hover:scale-125 transition-transform">📝</span>
+            <p class="text-[11px] md:text-[14px] font-bold text-gray-400 group-hover:text-white uppercase tracking-tighter leading-tight">업무 요약/효율</p>
+        </button>
+    </div>
+
+    <div class="glass-card p-6 md:p-8 rounded-[2.5rem] border-t-2 border-t-[#ff00ff] shadow-2xl text-white">
+        <h3 class="text-sm md:text-[17px] font-black tracking-[0.05em] text-[#ff00ff] mb-6 uppercase flex items-center leading-snug">
+            <span class="w-2 h-2 bg-[#ff00ff] rounded-full mr-3 shadow-[0_0_10px_#ff00ff] shrink-0"></span>
+            초간편 프롬프트 제작 요청: 당신의 업무, 목적 및 우선 순위 등을 간단하게 입력하세요.
+        </h3>
+        <textarea id="lab-input" class="w-full h-28 bg-white/5 border border-white/10 rounded-[1.5rem] p-6 text-sm md:text-base outline-none focus:border-[#ff00ff]/50 transition-all placeholder:text-gray-300 text-white leading-relaxed resize-none" 
+                  placeholder="당신의 업무 목적과 요청사항을 입력하세요. &#10; ex) 해외 바이어 발굴 및 첫 거래 제안 메일 작성을 위한 퓨샷(Few-shot) 프롬프트를 만들어줘"></textarea>
+        
+        <button onclick="generateTactic()" id="gen-btn" class="mt-6 w-full py-4 bg-[#ff00ff]/10 border border-[#ff00ff]/40 rounded-[1.5rem] text-lg md:text-xl font-black text-[#ff00ff] hover:bg-[#ff00ff] hover:text-white transition-all hover:shadow-[0_0_40px_#ff00ff] uppercase tracking-[0.2em]">
+            나만의 실무 프롬프트 생성하기
+        </button>
+    </div>
+
+    <div id="result-zone" class="glass-card p-6 md:p-10 rounded-[3rem] border-t-2 border-t-cyber-cyan shadow-2xl animate-fade-in relative">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 relative z-50 gap-6 lg:gap-0">
+            <h3 class="text-xs font-black tracking-[0.4em] text-cyber-cyan uppercase flex items-center">
+                <span class="w-2 h-2 bg-cyber-cyan rounded-full mr-3 shadow-[0_0_10px_#00e5ff]"></span>
+                프롬프트 커스터마이징
+            </h3>
+            <div class="flex flex-wrap gap-3 md:gap-4 w-full md:w-auto">
+                <button id="optimize-btn" onclick="optimizePrompt()" class="flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 bg-cyber-cyan/20 border border-cyber-cyan/40 rounded-xl text-[11px] md:text-[13px] font-black text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all uppercase tracking-widest italic">🪄 AI 최적화</button>
+                <button id="edit-mode-btn" onclick="toggleEditMode()" class="flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 bg-rose-500/20 border border-rose-500/40 rounded-xl text-[11px] md:text-[13px] font-black text-rose-400 hover:bg-rose-500 hover:text-white transition-all uppercase tracking-widest">✍️ 수정하기</button>
+                <button onclick="copyLabResult()" class="flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 bg-white/5 border border-white/10 rounded-xl text-[11px] md:text-[13px] font-black text-white hover:bg-white hover:text-black transition-all uppercase tracking-widest">📋 복사</button>
+                <button onclick="saveToLabHistory()" class="flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 bg-cyber-purple/20 border border-cyber-purple/40 rounded-xl text-[11px] md:text-[13px] font-black text-cyber-purple hover:bg-cyber-purple hover:text-white transition-all uppercase tracking-widest">💾 서버 저장</button>
+                
+                <div class="relative flex-1 md:flex-none">
+                    <button onclick="toggleDownloadMenu(event)" class="w-full md:w-auto px-3 md:px-5 py-2 md:py-2.5 bg-cyber-cyan/20 border border-cyber-cyan/40 rounded-xl text-[11px] md:text-[13px] font-black text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all uppercase tracking-widest">
+                        Download ▼
+                    </button>
+                    <div id="download-menu" class="absolute right-0 top-full pt-2 hidden z-[100]">
+                        <div class="w-52 bg-[#111] border border-white/10 rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-3xl">
+                            <button onclick="exportFile('txt')" class="w-full px-4 md:px-6 py-3 text-[10px] md:text-[12px] text-left hover:bg-white/10 transition-all font-bold border-b border-white/5 uppercase text-white">📄 메모장 (.txt)</button>
+                            <button onclick="exportFile('word')" class="w-full px-4 md:px-6 py-3 text-[10px] md:text-[12px] text-left hover:bg-white/10 transition-all font-bold border-b border-white/5 uppercase text-white">📘 워드 (.docx)</button>
+                            <button onclick="exportFile('hwp')" class="w-full px-4 md:px-6 py-3 text-[10px] md:text-[12px] text-left hover:bg-white/10 transition-all font-bold border-b border-white/5 uppercase text-white">📒 한글 (.hwp)</button>
+                            <button onclick="exportFile('md')" class="w-full px-4 md:px-6 py-3 text-[10px] md:text-[12px] text-left bg-cyber-cyan/5 hover:bg-cyber-cyan/20 transition-all font-black uppercase text-cyber-cyan italic font-bold">✨ 마크다운</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="lab-result" 
+             contenteditable="false" 
+             spellcheck="false"
+             class="relative z-0 bg-black/30 p-6 md:p-8 rounded-[1.5rem] border border-white/5 font-mono text-xs md:text-sm leading-relaxed text-gray-300 whitespace-pre-wrap border-l-4 border-l-cyber-cyan focus:outline-none transition-all shadow-inner"
+             title="수정하기 버튼을 누르면 편집이 가능합니다."># [여기에 생성할 프롬프트의 제목을 입력하세요]
+
+## 1. 역할 (Persona)
+(가이드: AI에게 부여할 전문적인 정체성을 입력하세요. 예: 당신은 10년 경력의 마케팅 전문가 또는 기술 지원 엔지니어입니다.)
+
+## 2. 배경과 의도, 맥락(Context)
+(가이드: 이 프롬프트가 필요한 비즈니스 상황이나 의도를 입력하세요. 사용자가 달성하려는 목적이 무엇인지 명시합니다.)
+
+## 3. 목표 우선순위 (Priority)
+(가이드: 가장 중요하게 고려해야 할 핵심 가치들을 순서대로 나열하세요.)
+1. [핵심 목표]: 예) 상대방에게 높은 신뢰감 주기
+2. [핵심 가치]: 예) 명확한 정보 전달
+3. [톤앤매너]: 예) 격식 있고 전문적인 어조 유지
+
+## 4. 실행 임무 (Mission)
+(가이드: AI가 실제로 수행해야 할 구체적인 작업 지침을 입력하세요. 아래에 결과물의 예시(Few-shot)를 넣으면 더욱 좋습니다.)
+
+### [템플릿 예시 영역]
+- 여기에 사용될 수 있는 실제 텍스트 샘플이나 형식을 입력하세요.
+
+## 5. 핵심 준수 규정 (Compliance)
+(가이드: 품질 보장을 위해 반드시 지켜야 할 원칙이나 금기 사항을 명시하세요.)
+1. **정확성**: 모든 정보는 사실에 기반하며 정확해야 합니다.
+2. **배려**: 상대방의 상황과 문화를 존중하는 어조를 사용합니다.
+3. **명료함**: 복잡한 용어보다는 이해하기 쉬운 언어를 선택합니다.</div>
+    </div>
+
+    <section class="glass-card rounded-[3rem] overflow-hidden shadow-2xl">
+        <div class="px-10 py-6 border-b border-white/5 bg-white/[0.03] flex flex-col md:flex-row justify-between items-center gap-4 text-white">
+            <h2 class="text-xs font-black tracking-[0.4em] uppercase flex items-center text-gray-400">
+                <span class="w-3 h-3 bg-[#ff00ff] rounded-full mr-4 animate-pulse shadow-[0_0_10px_#ff00ff]"></span>
+                프롬프트 저장 목록
+            </h2>
+            <div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+                <button onclick="backupAllLogs()" class="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black hover:bg-white hover:text-black transition-all uppercase tracking-widest italic">📚 전체 백업 (.docx)</button>
+                <span id="log-count" class="text-[10px] font-mono text-[#ff00ff] bg-[#ff00ff]/10 px-4 py-2 rounded-full font-bold uppercase">0 Logs</span>
+            </div>
+        </div>
+        <div id="lab-history-list" class="p-8 space-y-6 max-h-[500px] overflow-y-auto custom-scrollbar text-white">
+            <p class="text-center text-gray-600 py-16 italic text-sm">아직 제작된 프롬프트가 없습니다.</p>
+        </div>
+    </section>
+</div>
+
+<script>
+    function checkApiKeyAuth() {
+        const savedKey = localStorage.getItem('architect_api_key');
+        if(!savedKey || savedKey.trim().length < 10) {
+            showCyberAlert("🚨 API Key가 삭제되었거나 없습니다.\n AI 프롬프팅을 위해 사이드바에서 다시 입력해 주세요.(SAVE)", "error");
+            return false;
+        }
+        return savedKey;
+    }
+
+    function sanitizeForServer(text) {
+        return text.replace(/\(가이드:.*?\)/g, "").trim();
+    }
+
+    async function generateTactic() {
+        const purpose = document.getElementById('lab-input').value;
+        const btn = document.getElementById('gen-btn');
+        const resultDiv = document.getElementById('lab-result');
+        const userApiKey = checkApiKeyAuth();
+
+        if(!purpose) return showCyberAlert("🚨 업무 요청 데이터가 누락되었습니다.", "error");
+        if(!userApiKey) return;
+
+        if(resultDiv.innerText.includes("가이드:")) resultDiv.innerText = "데이터 분석 및 설계 중...";
+
+        btn.innerText = "🤖 프롬프트 생성 중..."; btn.disabled = true; btn.classList.add('animate-pulse');
+        try {
+            const response = await fetch('/generate_tactic', {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ purpose: purpose, api_key: userApiKey })
+            });
+            const data = await response.json();
+            if(data.result) {
+                resultDiv.innerText = data.result;
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+                showCyberAlert("✅ 프롬프팅이 성공적으로 완료되었습니다.", "success");
+            } else {
+                showCyberAlert(data.error || "시스템 오류", "error");
+            }
+        } catch (e) { showCyberAlert("🚨 시스템 응답 없음", "error"); }
+        finally { btn.innerText = "나만의 실무 프롬프트 생성하기"; btn.disabled = false; btn.classList.remove('animate-pulse'); }
+    }
+
+    async function optimizePrompt() {
+        const resultDiv = document.getElementById('lab-result');
+        const currentPrompt = sanitizeForServer(resultDiv.innerText); 
+        const optBtn = document.getElementById('optimize-btn');
+        const userApiKey = checkApiKeyAuth();
+
+        if(currentPrompt.length < 10) return showCyberAlert("🚨 최적화할 내용이 너무 부족합니다.", "error");
+        if(!userApiKey) return;
+
+        optBtn.innerText = "✨ 최적화 중..."; optBtn.disabled = true; optBtn.classList.add('animate-pulse');
+        try {
+            const response = await fetch('/generate_tactic', {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    purpose: `[최적화 요청] 아래 프롬프트의 골자를 유지하며 논리적 구조와 표현을 더 전문적으로 다듬어줘:\n\n${currentPrompt}`,
+                    api_key: userApiKey
+                })
+            });
+            const data = await response.json();
+            if(data.result) {
+                resultDiv.innerText = data.result;
+                showCyberAlert("✨ AI가 프롬프트를 더 정교하게 다듬었습니다.", "success");
+            }
+        } catch (e) { showCyberAlert("🚨 시스템 응답 없음", "error"); }
+        finally { optBtn.innerText = "🪄 AI 최적화"; optBtn.disabled = false; optBtn.classList.remove('animate-pulse'); }
+    }
+
+    function calcGPM() {
+        const sales = parseFloat(document.getElementById('sales-val').value);
+        const cost = parseFloat(document.getElementById('cost-val').value);
+        const resultDiv = document.getElementById('gpm-result');
+        if (sales && cost) {
+            const gpm = ((sales - cost) / sales * 100).toFixed(2);
+            resultDiv.innerText = `GPM: ${gpm}%`;
+            resultDiv.classList.add('animate-pulse');
+            setTimeout(() => resultDiv.classList.remove('animate-pulse'), 1000);
+        } else {
+            showCyberAlert("📊 예상 매출액과 원가를 입력하세요.", "info");
+        }
+    }
+
+    function toggleEditMode() {
+        const resultDiv = document.getElementById('lab-result');
+        const editBtn = document.getElementById('edit-mode-btn');
+        if (resultDiv.contentEditable === "false") {
+            resultDiv.contentEditable = "true"; resultDiv.focus();
+            resultDiv.classList.add('text-white', 'border-rose-500/30');
+            editBtn.innerText = "📝 수정 중...";
+            editBtn.className = "flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 bg-rose-600 border border-rose-500/40 rounded-xl text-[11px] md:text-[13px] font-black text-white transition-all uppercase tracking-widest";
+        } else {
+            resultDiv.contentEditable = "false";
+            resultDiv.classList.remove('text-white', 'border-rose-500/30');
+            editBtn.innerText = "✍️ 수정하기";
+            editBtn.className = "flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 bg-rose-500/20 border border-rose-500/40 rounded-xl text-[11px] md:text-[13px] font-black text-rose-400 hover:bg-rose-500 hover:text-white transition-all uppercase tracking-widest";
+        }
+    }
+
+    function toggleDownloadMenu(event) { event.stopPropagation(); document.getElementById('download-menu').classList.toggle('hidden'); }
+    window.addEventListener('click', () => { if(document.getElementById('download-menu')) document.getElementById('download-menu').classList.add('hidden'); });
+    function fillExample(text) { document.getElementById('lab-input').value = text; }
+    function copyLabResult() { navigator.clipboard.writeText(document.getElementById('lab-result').innerText).then(() => showCyberAlert("📋 클립보드에 복사되었습니다.", "success")); }
+
+    async function exportFile(format) {
+        const content = document.getElementById('lab-result').innerText;
+        try {
+            const response = await fetch('/download_doc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: content, format: format }) });
+            if (response.ok) {
+                const blob = await response.blob(); const a = document.createElement('a'); a.href = window.URL.createObjectURL(blob);
+                a.download = `Prompt_Export_${Date.now()}.${format === 'word' ? 'docx' : format}`; a.click();
+            }
+        } catch (e) { showCyberAlert("🚨 다운로드 오류", "error"); }
+    }
+
+    function saveToLabHistory() {
+        const content = document.getElementById('lab-result').innerText;
+        const purpose = document.getElementById('lab-input').value || "사용자 지정 설계";
+        const history = JSON.parse(localStorage.getItem('lab_history') || '[]');
+        history.unshift({ id: Date.now(), purpose: purpose, content: content, date: new Date().toLocaleString() });
+        localStorage.setItem('lab_history', JSON.stringify(history));
+        showCyberAlert("💾 개인 보관소에 저장되었습니다.", "success"); renderLabHistory();
+    }
+
+    function renderLabHistory() {
+        const history = JSON.parse(localStorage.getItem('lab_history') || '[]');
+        const container = document.getElementById('lab-history-list');
+        if(container) {
+            document.getElementById('log-count').innerText = `${history.length} Logs`;
+            container.innerHTML = history.length ? '' : '<p class="text-center text-gray-300 py-16 italic text-sm">아직 제작된 프롬프트가 없습니다.</p>';
+            history.forEach(log => {
+                const div = document.createElement('div');
+                div.className = 'glass-card p-4 md:p-6 rounded-[1.5rem] border border-white/5 hover:border-[#ff00ff]/30 transition-all group mb-4';
+                div.innerHTML = `<div class="flex justify-between items-start mb-2"><div><h4 class="text-[11px] md:text-xs font-black text-gray-300 leading-snug">${log.purpose.substring(0, 50)}</h4></div><span class="text-[8px] font-mono text-[#ff00ff] shrink-0 ml-2">${log.date}</span></div><div class="flex gap-2"><button onclick="viewLogDetail(${log.id})" class="px-2 md:px-3 py-1 bg-white/5 rounded-lg text-[7px] md:text-[8px] font-black hover:bg-[#ff00ff] hover:text-white transition-all uppercase">🔄 Re-Load</button></div>`;
+                container.appendChild(div);
+            });
+        }
+    }
+
+    function viewLogDetail(id) {
+        const log = JSON.parse(localStorage.getItem('lab_history')).find(l => l.id === id);
+        if(log) { document.getElementById('lab-result').innerText = log.content; document.getElementById('lab-input').value = log.purpose; document.getElementById('lab-result').scrollIntoView({ behavior: 'smooth' }); }
+    }
+
+    async function backupAllLogs() {
+        const history = JSON.parse(localStorage.getItem('lab_history') || '[]');
+        if(!history.length) return showCyberAlert("🚨 백업할 로그가 없습니다.", "error");
+        try {
+            const response = await fetch('/backup_all', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logs: history }) });
+            if(response.ok) {
+                const blob = await response.blob(); const a = document.createElement('a'); a.href = window.URL.createObjectURL(blob);
+                a.download = "My_Prompt_Bible.docx"; a.click(); showCyberAlert("📚 전체 백업 파일 생성 완료!", "success");
+            }
+        } catch (e) { showCyberAlert("🚨 백업 서버 오류", "error"); }
+    }
+
+    window.onload = renderLabHistory;
+</script>
+{% endblock %}

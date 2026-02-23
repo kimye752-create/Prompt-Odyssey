@@ -1,0 +1,17 @@
+# 설정 파일 및 비밀 키 (절대 배포 금지)
+.env
+*.pyc
+__pycache__/
+
+# 가상환경
+venv/
+.venv/
+env/
+
+# 로그 및 데이터베이스
+*.log
+*.sqlite3
+
+# 기타 운영체제 생성 파일
+.DS_Store
+Thumbs.db

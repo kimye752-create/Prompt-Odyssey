@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="animate-fade-in space-y-6 md:space-y-10 px-4 md:px-10 pt-4 md:pt-6 pb-10">
+    
+    <header class="border-l-4 md:border-l-8 border-cyber-cyan pl-4 md:pl-8 py-2 mb-6 md:mb-10">
+        <div class="flex flex-col lg:flex-row justify-between items-start gap-6 lg:gap-0">
+            <div class="space-y-3 md:space-y-4">
+                <h1 class="text-gray-100 text-2xl md:text-4xl font-black tracking-tighter italic leading-tight">
+                    "Prompt Odyssey에 오신 것을 환영합니다."
+                </h1>
+                <p class="text-gray-300 text-base md:text-xl font-bold opacity-95 leading-relaxed max-w-5xl">
+                    범용 AI의 한계를 넘고, 대표님의 직무에 완벽히 최적화된 AI를 설계해 업무 능률을 정점까지 끌어올리십시오.
+                    <span class="text-cyber-cyan block mt-2 md:mt-3 text-lg md:text-2xl">
+                        대표님의 AI 마스터를 위한 가장 강력한 가이드가 되어 드리겠습니다. 🚀
+                    </span>
+                </p>
+            </div>
+            
+            <div class="flex gap-4 shrink-0 w-full md:w-auto">
+                <button onclick="updateDashboardStats()" class="flex-1 md:flex-none flex items-center justify-center gap-3 px-6 md:px-8 py-3 md:py-4 bg-cyber-purple/10 border border-cyber-purple/30 rounded-2xl text-sm md:text-[17px] font-black text-cyber-purple hover:bg-cyber-purple hover:text-white transition-all hover:shadow-[0_0_25px_#7c4dff] uppercase tracking-widest group">
+                    <span class="group-hover:animate-spin text-base md:text-lg">⌬</span> System Sync
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div class="glass-card py-4 md:py-5 px-6 md:px-8 rounded-[1.5rem] md:rounded-[2rem] border-t-2 border-t-[#ff6600] shadow-xl text-white">
+            <p class="text-[10px] md:text-[11px] text-[#ff6600] font-black tracking-[0.3em] mb-1 md:mb-2 uppercase italic">Education Lecture </p>
+            <h3 id="total-unit-display" class="text-4xl md:text-5xl font-black shadow-neon-orange tracking-tighter">0</h3>
+            <p class="text-[8px] md:text-[9px] text-gray-600 mt-1 md:mt-2 italic font-bold uppercase">Active_Assets</p>
+        </div>
+
+        <div class="glass-card py-4 md:py-5 px-6 md:px-8 rounded-[1.5rem] md:rounded-[2rem] border-t-2 border-t-cyber-purple shadow-xl text-white">
+            <p class="text-[10px] md:text-[11px] text-cyber-purple font-black tracking-[0.3em] mb-1 md:mb-2 uppercase italic">Saved Library</p>
+            <h3 id="total-saved-count" class="saved-data-value text-4xl md:text-5xl font-black shadow-neon-purple tracking-tighter">0</h3>
+            <p class="text-[8px] md:text-[9px] text-gray-600 mt-1 md:mt-2 italic font-bold uppercase">Personal_Archive</p>
+        </div>
+
+        <div class="col-span-1 sm:col-span-2 md:col-span-2 glass-card py-4 md:py-5 px-6 md:px-8 rounded-[1.5rem] md:rounded-[2rem] border-t-2 border-t-[#00ffa2] relative overflow-hidden shadow-2xl text-white">
+            <p class="text-[10px] md:text-[11px] text-[#00ffa2] font-black tracking-[0.3em] mb-2 md:mb-3 uppercase italic">Voyage Achievement Rate</p>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                <h3 id="learning-rate-value" class="master-progress-value text-4xl md:text-5xl font-black shadow-neon-green tracking-tighter">0%</h3>
+                
+                <div class="w-full flex-1 h-2 md:h-3 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                    <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-[#00ffa2] to-blue-600 shadow-[0_0_20px_#00ffa2] transition-all duration-1000" style="width: 0%"></div>
+                </div>
+
+                <button onclick="hardResetSystem()" class="w-full sm:w-auto px-4 py-2 bg-red-400/12 border border-red-500/30 rounded-xl text-xs md:text-[15px] font-black text-red-500 hover:bg-red-500 hover:text-white transition-all uppercase">
+                    Reset
+                </button>
+            </div>
+            <p class="text-[8px] md:text-[9px] text-gray-600 mt-2 italic text-right uppercase tracking-widest">Real-time Analytics...</p>
+        </div>
+    </div>
+
+    <div class="space-y-6 md:space-y-8">
+        {% set chapters = [
+            {'id': '기초', 'name': 'Ch 1. 비즈니스 프롬프트 기초', 'color': 'cyber-cyan'},
+            {'id': '설계', 'name': 'Ch 2. 아키텍처 구조 설계', 'color': '[#ff6600]'},
+            {'id': '고급', 'name': 'Ch 3. 논리적 인터랙션 기법', 'color': 'cyber-purple'},
+            {'id': '응용', 'name': 'Ch 4. 워크플로우 최적화 도구', 'color': '[#ff00ff]'},
+            {'id': '프레임워크', 'name': 'Ch 5. 실전 솔루션 활용', 'color': 'cyber-green'}
+        ] %}
+
+        {% set global_counter = namespace(value=1) %}
+
+        {% for chapter in chapters %}
+        <section class="glass-card rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl border-l-4 border-l-{{ chapter.color if 'cyber' in chapter.color else chapter.color }}">
+            <div class="px-6 md:px-10 py-4 md:py-5 border-b border-white/5 bg-white/[0.03] flex justify-between items-center">
+                <h2 class="text-sm md:text-lg font-black tracking-widest uppercase flex items-center text-white">
+                    <span class="w-2 md:w-2.5 h-2 md:h-2.5 bg-{{ chapter.color if 'cyber' in chapter.color else 'white' }} rounded-full mr-3 md:mr-4 animate-pulse"></span>
+                    {{ chapter.name }}
+                </h2>
+                <span class="text-[8px] md:text-[9px] font-mono text-gray-500 tracking-[0.2em] md:tracking-[0.4em] uppercase">Sector_{{ loop.index }}</span>
+            </div>
+            
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left min-w-[500px] md:min-w-full">
+                    <thead class="text-[8px] md:text-[9px] text-gray-500 uppercase tracking-widest border-b border-white/5 bg-white/[0.01]">
+                        <tr>
+                            <th class="px-6 md:px-10 py-3 md:py-4 text-white">No.</th>
+                            <th class="px-6 md:px-10 py-3 md:py-4 text-white">Lecture Name</th>
+                            <th class="px-6 md:px-10 py-3 md:py-4 text-right text-white">Entry</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs md:text-sm">
+                        {% set chapter_patterns = patterns | selectattr("category", "equalto", chapter.id) | list %}
+                        
+                        {% if chapter_patterns %}
+                            {% for p in chapter_patterns if p.id != 26 %}
+                            <tr class="group hover:bg-white/[0.04] border-b border-white/5 transition-all text-white">
+                                <td class="px-6 md:px-10 py-3 md:py-3.5 font-mono text-gray-600 text-[9px] md:text-[10px] group-hover:text-cyber-cyan transition-colors">
+                                    SOL-{{ "%02d" % global_counter.value }}
+                                </td>
+                                <td class="px-6 md:px-10 py-3 md:py-3.5 font-bold text-sm md:text-base group-hover:translate-x-1 md:group-hover:translate-x-2 transition-transform">{{ p.title }}</td>
+                                <td class="px-6 md:px-10 py-3 md:py-3.5 text-right">
+                                    <a href="{{ url_for('detail', pattern_id=p.id) }}" id="nav-{{p.id}}" class="inline-block px-4 md:px-8 py-2 md:py-3 bg-cyber-purple/10 text-cyber-purple border border-cyber-purple/20 rounded-xl text-[9px] md:text-[10px] font-black hover:bg-cyber-purple hover:text-white transition-all shadow-md whitespace-nowrap">Enter →</a>
+                                </td>
+                            </tr>
+                            {% set global_counter.value = global_counter.value + 1 %}
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3" class="px-6 md:px-10 py-6 md:py-8 text-center text-gray-600 italic text-xs md:text-sm">데이터가 통합되었습니다.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function updateDashboardStats() {
+        const completed = JSON.parse(localStorage.getItem('completed_chapters') || '[]');
+        const library = JSON.parse(localStorage.getItem('lab_history') || '[]');
+        
+        const totalPatterns = Number('{{ patterns|rejectattr("id", "equalto", 26)|list|length }}');
+        const filteredCompleted = completed.filter(id => id !== 26);
+        const rate = totalPatterns > 0 ? Math.round((filteredCompleted.length / totalPatterns) * 100) : 0;
+        
+        document.querySelectorAll('.master-progress-value, #learning-rate-value').forEach(el => el.innerText = rate + '%');
+        const progressFill = document.getElementById('progress-bar-fill');
+        if(progressFill) progressFill.style.width = rate + '%';
+        
+        document.getElementById('total-unit-display').innerText = totalPatterns;
+        document.querySelectorAll('.saved-data-value, #total-saved-count').forEach(el => el.innerText = library.length);
+        
+        if(typeof showCyberAlert === 'function' && !sessionStorage.getItem('dashboard_welcome_shown')) {
+            const welcomeMsg = "대표님, 환영합니다. 시스템 최적화가 완료되었습니다. 😎";
+            showCyberAlert(welcomeMsg, "success");
+            sessionStorage.setItem('dashboard_welcome_shown', 'true');
+        }
+    }
+
+    function hardResetSystem() {
+        if(confirm("모든 데이터를 초기화하고 0%에서 다시 시작하시겠습니까?")) {
+            localStorage.clear(); 
+            sessionStorage.clear(); 
+            location.reload(); 
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', updateDashboardStats);
+</script>
+{% endblock %}

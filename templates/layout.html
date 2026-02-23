@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Odyssey</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230a192f' /%3E%3Cpath fill='%235d4037' d='M22,18.5C22,19.33 21.33,20 20.5,20H3.5C2.67,20 2,19.33 2,18.5V17H22V18.5M20,11V15H18V11H20M17,11V15H15V11H17M14,11V15H12V11H14M11,11V15H9V11H11M8,11V15H6V11H8M5,11V15H4V11H5M12.5,2.5L13,3V7H12V3L12.5,2.5Z'/%3E%3C/svg%3E">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: { 
+                extend: { 
+                    colors: { 
+                        'cyber-cyan': '#00e5ff', 
+                        'cyber-purple': '#7c4dff',
+                        'greek-brown': '#5d4037',
+                        'stormy-sky': '#0a192f',
+                        'deep-navy': '#001529'
+                    },
+                    animation: {
+                        'progress-bar': 'progress-load 3s linear forwards',
+                        'greek-voyage': 'stormy-pitch 2.5s ease-in-out infinite',
+                        'rolling-waves': 'wave-surge 3s linear infinite'
+                    },
+                    keyframes: {
+                        'progress-load': { '0%': { width: '0%' }, '100%': { width: '100%' } },
+                        'stormy-pitch': {
+                            '0%, 100%': { transform: 'rotate(-12deg) translateY(0px)' },
+                            '50%': { transform: 'rotate(15deg) translateY(-12px)' },
+                        },
+                        'wave-surge': {
+                            '0%': { transform: 'translateX(0)' },
+                            '100%': { transform: 'translateX(-50%)' }
+                        }
+                    }
+                } 
+            }
+        }
+    </script>
+    <style>
+        .category-content { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .category-group.active .category-content { max-height: 1000px; }
+        .category-group.active .arrow-icon { transform: rotate(180deg); }
+        .chapter-desc { font-size: 13px; line-height: 1.4; opacity: 0.8; margin-top: 4px; color: #94a3b8; font-weight: 500; }
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 229, 255, 0.1); }
+        
+        .odyssey-logo-frame {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(to bottom, #0a192f 0%, #0a192f 50%, #001529 50%, #001529 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.6);
+        }
+        
+        .trireme-svg {
+            width: 48px;
+            height: 48px;
+            fill: #5d4037;
+            filter: drop-shadow(0 4px 5px rgba(0,0,0,0.9));
+            z-index: 10;
+            position: relative;
+        }
+
+        .wave-wrapper {
+            position: absolute;
+            bottom: 0;
+            width: 200%;
+            height: 26px;
+            z-index: 20;
+            display: flex;
+        }
+        .realistic-wave {
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9V88.7h800v-31.8z' fill='%23001529'/%3E%3C/svg%3E");
+            background-size: 50% 100%;
+        }
+        .realistic-wave.back {
+            z-index: 5;
+            opacity: 0.6;
+            bottom: 4px;
+            filter: brightness(0.7);
+            animation: rolling-waves 4s linear infinite;
+        }
+        .realistic-wave.front {
+            z-index: 25;
+            animation: rolling-waves 2.5s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-[#050505] text-white overflow-hidden font-sans">
+    <canvas id="star-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+    
+    <div id="cert-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.9); align-items: center; justify-content: center;">
+        <div class="certificate animate-fade-in bg-[#111] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border border-cyber-cyan/30 text-center shadow-[0_0_60px_rgba(0,229,255,0.25)] mx-4 max-w-2xl">
+            <p class="text-cyber-cyan font-bold tracking-[0.6em] mb-4 uppercase text-[10px] md:text-xs">Official Certification</p>
+            <h2 class="text-3xl md:text-5xl font-black my-6 md:my-8 shadow-neon uppercase">PROMPT MASTER</h2>
+            <p class="leading-relaxed text-gray-400 text-sm md:text-lg font-medium">
+                <span class="text-white font-bold">😆 대표님</span>은<br>
+                총 20개 비즈니스 솔루션의 고지능 프롬프팅 과정을 성공적으로 이수하였습니다.
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center mt-10">
+                <button class="px-10 py-4 bg-cyber-cyan text-black font-black rounded-2xl hover:scale-105 transition-transform shadow-[0_0_20px_#00e5ff] text-sm md:text-base" onclick="downloadCertificate()">🏆 인증서 PDF 저장</button>
+                <button class="px-10 py-4 bg-white/10 text-white font-black rounded-2xl hover:bg-white/20 transition-all border border-white/10 text-sm md:text-base" onclick="closeCert()">시스템 복귀</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container flex flex-col md:flex-row h-[100dvh] relative z-10 overflow-hidden bg-transparent">
+        
+        <header class="md:hidden flex-shrink-0 bg-[#050505]/95 backdrop-blur-2xl border-b border-white/10 px-6 py-4 flex justify-between items-center z-[100]">
+            <a href="/" class="flex items-center gap-4 no-underline">
+                <div class="w-10 h-10 bg-gradient-to-b from-[#0a192f] to-[#001529] rounded-lg border border-white/20 flex items-center justify-center overflow-hidden relative shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
+                    <svg class="w-6 h-6 fill-[#5d4037]" viewBox="0 0 24 24"><path d="M22,18.5C22,19.33 21.33,20 20.5,20H3.5C2.67,20 2,19.33 2,18.5V17H22V18.5M20,11V15H18V11H20M17,11V15H15V11H17M14,11V15H12V11H14M11,11V15H9V11H11M8,11V15H6V11H8M5,11V15H4V11H5M12.5,2.5L13,3V7H12V3L12.5,2.5Z"/></svg>
+                </div>
+                <h1 class="text-lg font-black tracking-wide text-white uppercase italic leading-none">
+                    Prompt <span class="text-cyber-cyan">Odyssey</span>
+                </h1>
+            </a>
+            <button onclick="toggleMobileSidebar()" class="text-cyber-cyan text-3xl focus:outline-none bg-white/5 w-12 h-12 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/10 transition-all">
+                ☰
+            </button>
+        </header>
+
+        <div id="mobile-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[140] hidden md:hidden transition-all duration-300 opacity-0"></div>
+
+        <aside id="app-sidebar" class="sidebar w-80 md:w-96 absolute md:relative inset-y-0 left-0 z-[150] md:z-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out bg-black/98 md:bg-black/40 backdrop-blur-3xl border-r border-white/5 flex flex-col shadow-2xl h-[100dvh] md:h-auto">
+            
+            <button onclick="toggleMobileSidebar()" class="md:hidden absolute top-4 right-4 text-gray-400 hover:text-white text-2xl w-10 h-10 flex items-center justify-center bg-white/5 rounded-full border border-white/10">
+                ✕
+            </button>
+
+            <div class="px-7 py-8 pb-4 hidden md:block">
+                <a href="/" class="group no-underline flex items-center gap-6">
+                    <div class="odyssey-logo-frame flex-shrink-0">
+                        <svg class="trireme-svg group-hover:animate-greek-voyage transition-all" viewBox="0 0 24 24">
+                            <path d="M22,18.5C22,19.33 21.33,20 20.5,20H3.5C2.67,20 2,19.33 2,18.5V17H22V18.5M20,11V15H18V11H20M17,11V15H15V11H17M14,11V15H12V11H14M11,11V15H9V11H11M8,11V15H6V11H8M5,11V15H4V11H5M12.5,2.5L13,3V7H12V3L12.5,2.5Z"/>
+                        </svg>
+                        <div class="wave-wrapper back">
+                            <div class="realistic-wave"></div><div class="realistic-wave"></div>
+                        </div>
+                        <div class="wave-wrapper front">
+                            <div class="realistic-wave"></div><div class="realistic-wave"></div>
+                        </div>
+                    </div>
+                    <h1 class="text-[30px] font-black tracking-wide text-white uppercase italic leading-none">
+                        Prompt <span class="text-white">Odyssey</span>
+                    </h1>
+                </a>
+            </div>
+
+            <div class="px-7 space-y-1 mt-12 md:mt-0">
+                <div class="search-box relative py-2">
+                    <input type="text" id="chapter-search" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:border-cyber-cyan/50 outline-none text-white transition-all" placeholder="키워드 검색..." onkeyup="filterChapters()">
+                </div>
+                
+                <div class="progress-section bg-white/[0.02] p-3 rounded-xl border border-white/5">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-[9px] text-gray-300 font-black tracking-[0.3em] uppercase">Voyage Progress</p>
+                        <p id="progress-text" class="text-[10px] text-cyber-cyan font-black">0% Navigated</p>
+                    </div>
+                    <div class="h-1 bg-white/10 rounded-full overflow-hidden">
+                        <div id="progress-fill" class="h-full bg-cyber-cyan shadow-[0_0_15px_#00e5ff] transition-all duration-1000"></div>
+                    </div>
+                </div>
+
+                <div class="api-key-section bg-white/[0.02] p-3 rounded-xl border border-white/5 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <p class="text-[9px] text-gray-300 font-black tracking-[0.3em] uppercase">API Engine</p>
+                        <span id="api-status" class="text-[9px] text-red-500 font-bold uppercase">Disconnected</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="password" id="sidebar-api-key" 
+                               class="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-xs focus:border-cyber-cyan/50 outline-none text-white placeholder:text-gray-100 transition-all" 
+                               placeholder="API Key Required...">
+                        <button id="sidebar-api-btn" onclick="handleApiKeyAction()" 
+                                class="px-3 py-1 bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-lg text-[10px] font-black text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all">
+                            SAVE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto mt-2 px-4 pb-12 custom-scrollbar">
+                <ul class="space-y-2.5" id="chapter-list">
+                    <li>
+                        <a href="/architect" onclick="closeMobileSidebarIfMobile()" class="flex items-center gap-5 px-6 py-3 rounded-2xl transition-all border {{ 'bg-cyber-cyan/10 border-cyber-cyan shadow-[0_0_20px_rgba(0,229,255,0.1)]' if request.path == '/architect' else 'bg-white/[0.03] border-white/10 text-gray-400 hover:border-cyber-cyan/30' }}">
+                            <span class="text-[26px]">🏗️</span>
+                            <div class="flex flex-col">
+                                <span class="text-[15px] font-black tracking-tight uppercase text-white leading-none">Prompt Architect</span>
+                                <span class="text-[13px] font-bold text-cyber-cyan tracking-[0em] mt-2 opacity-90">개인 · 요건업무 특화 AI 설계소 </span>
+                            </div>
+                        </a>
+                    </li>
+
+                    {% set category_map = [
+                        {'id': '기초', 'name': 'Ch 1. 프롬프팅 가이드 입문', 'desc': 'AI를 사용자 의도대로 커스터마이징 하는 기술'},
+                        {'id': '설계', 'name': 'Ch 2. 지시 설계 아키텍처', 'desc': '논리적인 답변 구조로 오답률을 제로화하는 설계 기술'},
+                        {'id': '고급', 'name': 'Ch 3. 전략적 페르소나 부여', 'desc': '특정 업무 전문가의 정체성을 AI에 이식하는 기술'},
+                        {'id': '응용', 'name': 'Ch 4. 고지능 성능 최적화', 'desc': '프롬프트 자동 설계 및 최신 개발 방법론 정립'},
+                        {'id': '프레임워크', 'name': 'Ch 5. 실무 솔루션 라이브러리', 'desc': '비즈니스 현장에 즉시 투입 가능한 실전 템플릿'}
+                    ] %}
+
+                    {% set global_counter = namespace(value=1) %}
+                    {% for cat in category_map %}
+                    <li class="category-group chapter-item {{ 'active' if loop.index == 1 else '' }}">
+                        <div class="flex flex-col px-6 py-3 cursor-pointer hover:bg-white/5 rounded-xl transition-all" onclick="toggleCategory(this)">
+                            <div class="flex justify-between items-center w-full">
+                                <h4 class="text-[16px] text-cyber-cyan font-black tracking-tight uppercase leading-tight">{{ cat.name }}</h4>
+                                <span class="arrow-icon text-[10px] text-cyber-cyan/40 transition-transform duration-300">▼</span>
+                            </div>
+                            <p class="chapter-desc">{{ cat.desc }}</p>
+                        </div>
+                        <ul class="category-content space-y-1 mt-1 border-l border-white/5 ml-8">
+                            {% if patterns %}
+                                {% for p in patterns if p.category == cat.id and p.id != 26 %}
+                                <li class="chapter-item" data-title="{{ p.title }}">
+                                    <a href="{{ url_for('detail', pattern_id=p.id) }}" onclick="closeMobileSidebarIfMobile()" id="nav-{{p.id}}" class="group flex items-start px-4 py-2 rounded-lg text-[13.5px] font-bold transition-all {{ 'bg-cyber-purple/20 text-cyber-purple border border-cyber-purple/30' if pattern and pattern.id == p.id else 'text-slate-300 hover:text-cyber-cyan hover:bg-white/5' }}">
+                                         <span class="mr-3 mt-0.5 opacity-50 group-hover:opacity-100 transition-opacity text-[12px] shrink-0 font-mono">
+                                             {{ "%02d." % global_counter.value }}
+                                         </span>
+                                         <span class="whitespace-normal leading-snug break-keep">{{ p.title.split('. ')[1] if '. ' in p.title else p.title }}</span>
+                                    </a>
+                                </li>
+                                {% set global_counter.value = global_counter.value + 1 %}
+                                {% endfor %}
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content flex-1 overflow-y-auto relative z-10 w-full bg-transparent">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <div id="cyber-toast-container" class="fixed inset-0 z-[600] flex flex-col items-center justify-center pointer-events-none space-y-6"></div>
+
+    <script>
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('app-sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300); 
+            }
+        }
+
+        function closeMobileSidebarIfMobile() {
+            if (window.innerWidth < 768) { toggleMobileSidebar(); }
+        }
+
+        function handleApiKeyAction() {
+            const btn = document.getElementById('sidebar-api-btn');
+            if (btn.innerText === "SAVE") { saveSidebarKey(); } else { deleteSidebarKey(); }
+        }
+
+        function saveSidebarKey() {
+            const key = document.getElementById('sidebar-api-key').value;
+            if (key.trim().length > 10) {
+                localStorage.setItem('architect_api_key', key);
+                updateApiKeyStatus();
+                showCyberAlert("API-Key가 동기화되었습니다.\n프롬프팅 준비 완료", "success");
+            } else { showCyberAlert("유효한 API Key를 입력해주세요.", "error"); }
+        }
+
+        function deleteSidebarKey() {
+            if (confirm("저장된 API Key를 삭제하시겠습니까?")) {
+                localStorage.removeItem('architect_api_key');
+                document.getElementById('sidebar-api-key').value = "";
+                updateApiKeyStatus();
+                showCyberAlert("API Key가 안전하게 파기되었습니다.\n오프라인 모드로 전환됩니다.", "info");
+            }
+        }
+
+        function updateApiKeyStatus() {
+            const savedKey = localStorage.getItem('architect_api_key');
+            const statusEl = document.getElementById('api-status');
+            const inputEl = document.getElementById('sidebar-api-key');
+            const btnEl = document.getElementById('sidebar-api-btn');
+            if (savedKey && savedKey.trim().length > 10) {
+                statusEl.innerText = "Linked";
+                statusEl.className = "text-[9px] text-cyber-cyan font-bold uppercase animate-pulse";
+                inputEl.value = savedKey;
+                btnEl.innerText = "DELETE";
+                btnEl.className = "px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-lg text-[10px] font-black text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]";
+            } else {
+                statusEl.innerText = "Disconnected";
+                statusEl.className = "text-[9px] text-red-500 font-bold uppercase";
+                inputEl.value = "";
+                btnEl.innerText = "SAVE";
+                btnEl.className = "px-3 py-1 bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-lg text-[10px] font-black text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all";
+            }
+        }
+
+        function toggleCategory(headerEl) { headerEl.parentElement.classList.toggle('active'); }
+        
+        const canvas = document.getElementById('star-canvas'); const ctx = canvas.getContext('2d');
+        let stars = []; 
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
+        for(let i=0; i<150; i++) stars.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*1.5, speed: Math.random()*0.07 + 0.03, opacity: Math.random()*0.6});
+        function draw() { 
+            ctx.clearRect(0,0,canvas.width, canvas.height); 
+            stars.forEach(s => { 
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`; 
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI*2); ctx.fill(); 
+                s.y += s.speed; if(s.y > canvas.height) s.y = 0; 
+            }); 
+            requestAnimationFrame(draw); 
+        }
+        draw();
+
+        function filterChapters() {
+            const query = document.getElementById('chapter-search').value.toLowerCase();
+            document.querySelectorAll('.category-group').forEach(group => {
+                let hasMatch = false;
+                group.querySelectorAll('.chapter-item').forEach(item => {
+                    const title = item.getAttribute('data-title') ? item.getAttribute('data-title').toLowerCase() : "";
+                    if(title.includes(query)) { item.style.display = 'block'; hasMatch = true; }
+                    else { item.style.display = 'none'; }
+                });
+                group.style.display = hasMatch ? 'block' : 'none';
+                if(query !== "") group.classList.add('active');
+            });
+        }
+
+        function updateProgress() {
+            const completed = JSON.parse(localStorage.getItem('completed_chapters') || '[]');
+            const totalChapters = 20; 
+            const percent = Math.round((completed.length / totalChapters) * 100);
+            if(document.getElementById('progress-fill')) document.getElementById('progress-fill').style.width = percent + '%';
+            if(document.getElementById('progress-text')) document.getElementById('progress-text').innerText = percent + '% Navigated';
+            const dashboardPercent = document.querySelector('.master-progress-value');
+            if(dashboardPercent) dashboardPercent.innerText = percent + '%';
+            completed.forEach(id => { 
+                const nav = document.getElementById('nav-' + id); 
+                if(nav) {
+                    const icon = nav.querySelector('span:first-child');
+                    if(icon && !icon.innerText.includes('✅')) { icon.innerText = '✅'; icon.classList.add('text-cyber-cyan'); }
+                }
+            });
+            if(percent >= 100 && !localStorage.getItem('cert_shown')) showMasterCelebration();
+        }
+
+        function showMasterCelebration() { document.getElementById('cert-modal').style.display = 'flex'; localStorage.setItem('cert_shown', 'true'); confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 }, colors: ['#00e5ff', '#7c4dff', '#ffffff'] }); }
+        function closeCert() { document.getElementById('cert-modal').style.display = 'none'; }
+
+        async function downloadCertificate() {
+            showCyberAlert("🏆 공식 인증서를 생성 중입니다...", "info");
+            try {
+                const response = await fetch('/generate_certificate', { method: 'POST' });
+                if(response.ok) {
+                    const blob = await response.blob(); const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = "Official_Certificate.pdf";
+                    document.body.appendChild(a); a.click(); a.remove();
+                    showCyberAlert("✅ 인증서 발급 완료!", "success");
+                }
+            } catch (e) { showCyberAlert("🚨 시스템 장애 발생", "error"); }
+        }
+
+        function showCyberAlert(msg, type = 'info') {
+            if (msg.includes("생성이 완료되었습니다")) return;
+            const container = document.getElementById('cyber-toast-container'); container.innerHTML = ''; 
+            let displayDuration = 2100;
+            const toast = document.createElement('div');
+            const themes = { success: 'border-cyber-cyan shadow-[0_0_50px_rgba(0,229,255,0.5)] text-cyber-cyan bg-black/80', error: 'border-red-500 shadow-[0_0_50px_rgba(255,0,0,0.5)] text-red-500 bg-black/80', info: 'border-cyber-purple shadow-[0_0_50px_rgba(124,77,255,0.5)] text-cyber-purple bg-black/80' };
+            
+            toast.className = `pointer-events-auto w-[90%] max-w-[520px] min-h-[160px] md:min-h-[200px] glass-card p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border-l-8 ${themes[type]} animate-fade-in flex flex-col items-center justify-center text-center gap-4 md:gap-6 backdrop-blur-3xl border border-white/5`;
+            
+            // [수정 포인트] 상단 메인 아이콘 😎 로직 추가
+            let icon = '🛰'; 
+            if(type === 'success') icon = '👤'; 
+            if(type === 'error') icon = '🚨';
+            
+            // 프롬프팅 성공 또는 최적화 메시지가 포함된 경우에만 😎 아이콘 적용
+            if(msg.includes("프롬프팅") || msg.includes("다듬었습니다")) icon = '😎';
+
+            toast.innerHTML = `<span class="text-4xl md:text-6xl mb-2">${icon}</span><div class="space-y-2"><p class="text-[10px] md:text-[12px] font-black tracking-[0.5em] opacity-60 uppercase text-white">System Message</p><p class="text-lg md:text-2xl font-black tracking-tight leading-relaxed text-white whitespace-pre-wrap">${msg}</p></div><div class="w-full h-1 bg-white/5 mt-4 rounded-full overflow-hidden border border-white/5"><div class="h-full bg-current opacity-30 animate-progress-bar"></div></div>`;
+            const bar = toast.querySelector('.animate-progress-bar'); if(bar) bar.style.animationDuration = displayDuration + 'ms';
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.transition = "all 0.4s ease"; toast.classList.add('opacity-0', 'scale-95', 'translate-y-10'); setTimeout(() => toast.remove(), 400); }, displayDuration); 
+        }
+
+        window.onload = () => { updateProgress(); updateApiKeyStatus(); };
+    </script>
+</body>
+</html>
