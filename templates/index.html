@@ -129,7 +129,7 @@
         document.querySelectorAll('.saved-data-value, #total-saved-count').forEach(el => el.innerText = library.length);
         
         if(typeof showCyberAlert === 'function' && !sessionStorage.getItem('dashboard_welcome_shown')) {
-            const welcomeMsg = "대표님, 환영합니다. 시스템 최적화가 완료되었습니다. 😎";
+            const welcomeMsg = "대표님, 환영합니다. 기다리고 있었습니다. 😎";
             showCyberAlert(welcomeMsg, "success");
             sessionStorage.setItem('dashboard_welcome_shown', 'true');
         }
